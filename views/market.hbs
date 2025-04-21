@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/style.css">
+    <title>BSU Marketplace</title>
+    <style>
+        /* Style for the shopping cart button */
+        #shoppingCartButton {
+            position: fixed;
+            top: 80px; /* Adjust this value to move the button lower */
+            right: 20px;
+            z-index: 1000;
+        }
+
+        /* Style for the shopping cart popup */
+        #shoppingCartPopup {
+            position: fixed;
+            top: 120px; /* Adjust this value to move the popup lower */
+            right: 20px;
+            width: 300px;
+            background-color: white;
+            border: 1px solid #ccc;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            z-index: 999;
+            display: none;
+        }
+
+        #shoppingCartPopup .cart-header {
+            background-color: #f8f9fa;
+            padding: 10px;
+            border-bottom: 1px solid #ccc;
+        }
+
+        #shoppingCartPopup .cart-body {
+            max-height: 300px;
+            overflow-y: auto;
+            padding: 10px;
+        }
+
+        #shoppingCartPopup .cart-footer {
+            padding: 10px;
+            border-top: 1px solid #ccc;
+            text-align: right;
+        }
+
+        /* Style for the small product image */
+        .cart-item-image {
+            width: 30px;
+            height: 30px;
+            object-fit: cover;
+            margin-right: 10px;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <div class="container">
+            <a class="navbar-brand" href="#">BSU Marketplace</a>
+            <div class="collapse navbar-collapse">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item"><a class="nav-link" href="/">Home</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/login">Login</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/register">Register</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <div class="jumbotron text-center">
+            <h1 class="display-4">Welcome to BSU Marketplace!</h1>
+            <p class="lead">You are now logged in and can start browsing items.</p>
+            <hr class="my-4">
+            <p>This marketplace is for BSU residents, ensuring diversity and togetherness as a community.</p>
+
+            <!-- Post Product Button -->
+            <button type="button" class="btn btn-primary btn-lg" data-bs-toggle="modal" data-bs-target="#postProductModal">
+                Post Product
+            </button>
+
+            <!-- Logout using POST request -->
+            <form action="/auth/logout" method="POST" class="d-inline">
+                <button type="submit" class="btn btn-danger btn-lg">Logout</button>
+            </form>
+        </div>
+
+        <!-- Post Product Modal -->
+        <div class="modal fade" id="postProductModal" tabindex="-1" aria-labelledby="postProductModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="postProductModalLabel">Post a New Product</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="postProductForm" enctype="multipart/form-data">
+                            <div class="mb-3">
+                                <label for="productImage" class="form-label">Product Image</label>
+                                <input class="form-control" type="file" id="productImage" name="image" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="productName" class="form-label">Product Name</label>
+                                <input type="text" class="form-control" id="productName" name="name" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="productPrice" class="form-label">Price</label>
+                                <input type="number" class="form-control" id="productPrice" name="price" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="sellerName" class="form-label">Seller Name</label>
+                                <input type="text" class="form-control" id="sellerName" name="seller" required>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Post Product</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Products Section -->
+        <div id="productsSection" class="mt-4">
+            <h2>Available Products</h2>
+            <div id="productsContainer" class="row">
+                <!-- Products will be dynamically inserted here -->
+            </div>
+        </div>
+
+        <!-- Shopping Cart Button -->
+        <button id="shoppingCartButton" class="btn btn-warning">Shopping Cart</button>
+
+        <!-- Shopping Cart Popup with Checkout Button -->
+        <div id="shoppingCartPopup">
+            <div class="cart-header">
+                <h5>Shopping Cart</h5>
+            </div>
+            <div class="cart-body">
+                <ul id="cartItems" class="list-group">
+                    <!-- Cart items will be dynamically inserted here -->
+                </ul>
+            </div>
+            <div class="cart-footer">
+                <p id="cartTotal">Total: $0.00</p>
+                <button id="checkoutButton" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#checkoutModal">Checkout</button>
+            </div>
+        </div>
+
+        <!-- Checkout Modal -->
+        <div class="modal fade" id="checkoutModal" tabindex="-1" aria-labelledby="checkoutModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="checkoutModalLabel">Checkout</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="checkoutForm">
+                            <div class="mb-3">
+                                <label for="fullName" class="form-label">Full Name</label>
+                                <input type="text" class="form-control" id="fullName" name="fullName" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="email" class="form-label">Email</label>
+                                <input type="email" class="form-control" id="email" name="email" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="address" class="form-label">Address</label>
+                                <input type="text" class="form-control" id="address" name="address" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="paymentMethod" class="form-label">Payment Method</label>
+                                <select class="form-select" id="paymentMethod" name="paymentMethod" required>
+                                    <option value="credit_card">Credit Card</option>
+                                    <option value="paypal">PayPal</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <h3>Order Summary</h3>
+                                <ul id="checkoutCartItems" class="list-group">
+                                    <!-- Cart items will be dynamically inserted here -->
+                                </ul>
+                                <p id="checkoutCartTotal">Total: $0.00</p>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Place Order</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Fetch and display all products on page load
+            fetch('/products/all')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        const productContainer = document.getElementById('productsContainer');
+                        data.products.forEach(product => {
+                            const productHtml = `
+                                <div class="col-md-4 mb-4">
+                                    <div class="card">
+                                        <img src="/uploads/${product.image_name}" class="card-img-top" alt="${product.name}" style="width: 100%; height: 250px; object-fit: cover;">
+                                        <div class="card-body">
+                                            <h5 class="card-title">${product.name}</h5>
+                                            <p class="card-text">Price: $${product.price}</p>
+                                            <p class="card-text">Seller: ${product.seller}</p>
+                                            <button class="btn btn-success add-to-cart" data-product-id="${product.id}" data-product-name="${product.name}" data-product-price="${product.price}" data-product-image="/uploads/${product.image_name}">Add to Cart</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            `;
+                            productContainer.insertAdjacentHTML('beforeend', productHtml);
+                        });
+                    }
+                })
+                .catch(error => {
+                    console.error('Error fetching products:', error);
+                });
+
+            document.getElementById('postProductForm').addEventListener('submit', function(event) {
+                event.preventDefault();
+
+                const formData = new FormData(event.target);
+
+                fetch('/products/post-product', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert('Product posted successfully!');
+                        // Dynamically add the new product to the DOM
+                        const productContainer = document.getElementById('productsContainer');
+                        const productHtml = `
+                            <div class="col-md-4 mb-4">
+                                <div class="card">
+                                    <img src="/uploads/${data.product.image_name}" class="card-img-top" alt="${data.product.name}" style="width: 100%; height: 250px; object-fit: cover;">
+                                    <div class="card-body">
+                                        <h5 class="card-title">${data.product.name}</h5>
+                                        <p class="card-text">Price: $${data.product.price}</p>
+                                        <p class="card-text">Seller: ${data.product.seller}</p>
+                                        <button class="btn btn-success add-to-cart" data-product-id="${data.product.id}" data-product-name="${data.product.name}" data-product-price="${data.product.price}" data-product-image="/uploads/${data.product.image_name}">Add to Cart</button>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                        productContainer.insertAdjacentHTML('beforeend', productHtml);
+                        // Optionally, close the modal
+                        document.getElementById('postProductModal').querySelector('.btn-close').click();
+                    } else {
+                        alert('Error posting product.');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+            });
+
+            // Handle "Add to Cart" button click
+            document.addEventListener('click', function(event) {
+                if (event.target && event.target.classList.contains('add-to-cart')) {
+                    const productId = event.target.getAttribute('data-product-id');
+                    const productName = event.target.getAttribute('data-product-name');
+                    const productPrice = parseFloat(event.target.getAttribute('data-product-price'));
+                    const productImage = event.target.getAttribute('data-product-image');
+
+                    addToCart(productId, productName, productPrice, productImage);
+                }
+            });
+
+            // Shopping cart logic
+            const cart = {};
+
+            function addToCart(productId, productName, productPrice, productImage) {
+                if (cart[productId]) {
+                    cart[productId].quantity += 1;
+                } else {
+                    cart[productId] = { name: productName, price: productPrice, quantity: 1, image: productImage };
+                }
+                updateCartDisplay();
+            }
+
+            function updateCartDisplay() {
+                const cartItems = document.getElementById('cartItems');
+                const cartTotal = document.getElementById('cartTotal');
+                cartItems.innerHTML = '';
+                let total = 0;
+
+                for (const productId in cart) {
+                    const item = cart[productId];
+                    const listItem = document.createElement('li');
+                    listItem.classList.add('list-group-item', 'd-flex', 'justify-content-between', 'align-items-center');
+                    listItem.innerHTML = `
+                        <img src="${item.image}" class="cart-item-image" alt="${item.name}">
+                        <span>${item.name}</span>
+                        <div class="d-flex align-items-center">
+                            <button class="btn btn-sm btn-secondary decrement" data-product-id="${productId}">-</button>
+                            <span class="mx-2">${item.quantity}</span>
+                            <button class="btn btn-sm btn-secondary increment" data-product-id="${productId}">+</button>
+                        </div>
+                        <span>$${(item.price * item.quantity).toFixed(2)}</span>
+                    `;
+                    cartItems.appendChild(listItem);
+                    total += item.price * item.quantity;
+                }
+
+                cartTotal.textContent = `Total: $${total.toFixed(2)}`;
+            }
+
+            function incrementQuantity(productId) {
+                if (cart[productId]) {
+                    cart[productId].quantity += 1;
+                    updateCartDisplay();
+                }
+            }
+
+            function decrementQuantity(productId) {
+                if (cart[productId]) {
+                    if (cart[productId].quantity > 1) {
+                        cart[productId].quantity -= 1;
+                    } else {
+                        delete cart[productId];
+                    }
+                    updateCartDisplay();
+                }
+            }
+
+            // Handle increment and decrement button clicks
+            document.addEventListener('click', function(event) {
+                if (event.target && event.target.classList.contains('increment')) {
+                    const productId = event.target.getAttribute('data-product-id');
+                    incrementQuantity(productId);
+                } else if (event.target && event.target.classList.contains('decrement')) {
+                    const productId = event.target.getAttribute('data-product-id');
+                    decrementQuantity(productId);
+                }
+            });
+
+            // Handle shopping cart button click
+            const shoppingCartButton = document.getElementById('shoppingCartButton');
+            const shoppingCartPopup = document.getElementById('shoppingCartPopup');
+
+            shoppingCartButton.addEventListener('click', function() {
+                if (shoppingCartPopup.style.display === 'none' || shoppingCartPopup.style.display === '') {
+                    shoppingCartPopup.style.display = 'block';
+                } else {
+                    shoppingCartPopup.style.display = 'none';
+                }
+            });
+
+            // Close the popup if clicking outside of it, except for the checkout button and increment/decrement buttons
+            window.addEventListener('click', function(event) {
+                if (!shoppingCartPopup.contains(event.target) && !shoppingCartButton.contains(event.target) && !event.target.classList.contains('checkoutButton') && !event.target.classList.contains('increment') && !event.target.classList.contains('decrement')) {
+                    shoppingCartPopup.style.display = 'none';
+                }
+            });
+
+            // Handle checkout button click
+            const checkoutButton = document.getElementById('checkoutButton');
+            checkoutButton.addEventListener('click', function() {
+                // Store cart items in local storage or pass them to the checkout page
+                localStorage.setItem('cart', JSON.stringify(cart));
+                // The modal will handle the display of the checkout form
+            });
+
+            // Handle checkout form submission
+            document.getElementById('checkoutForm').addEventListener('submit', function(event) {
+                event.preventDefault();
+
+                const fullName = document.getElementById('fullName').value;
+                const email = document.getElementById('email').value;
+                const address = document.getElementById('address').value;
+                const paymentMethod = document.getElementById('paymentMethod').value;
+                const totalAmount = parseFloat(document.getElementById('cartTotal').textContent.split('$')[1]);
+
+                fetch('/checkout', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ fullName, email, address, paymentMethod, totalAmount })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert('Order placed successfully!');
+                        // Clear the cart after checkout
+                        localStorage.removeItem('cart');
+                        document.getElementById('cartItems').innerHTML = '';
+                        document.getElementById('cartTotal').textContent = 'Total: $0.00';
+                        shoppingCartPopup.style.display = 'none';
+                    } else {
+                        alert('Error processing order.');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+            });
+
+            // Populate checkout modal with cart items
+            const checkoutCartItems = document.getElementById('checkoutCartItems');
+            const checkoutCartTotal = document.getElementById('checkoutCartTotal');
+
+            function updateCheckoutCartDisplay() {
+                checkoutCartItems.innerHTML = '';
+                let total = 0;
+
+                for (const productId in cart) {
+                    const item = cart[productId];
+                    const listItem = document.createElement('li');
+                    listItem.classList.add('list-group-item');
+                    listItem.innerHTML = `
+                        <img src="${item.image}" class="cart-item-image" alt="${item.name}">
+                        ${item.name} - $${item.price.toFixed(2)} x ${item.quantity}
+                    `;
+                    checkoutCartItems.appendChild(listItem);
+                    total += item.price * item.quantity;
+                }
+
+                checkoutCartTotal.textContent = `Total: $${total.toFixed(2)}`;
+            }
+
+            // Update checkout modal when it is shown
+            const checkoutModal = document.getElementById('checkoutModal');
+            checkoutModal.addEventListener('show.bs.modal', function() {
+                updateCheckoutCartDisplay();
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,66 @@
+/* Ensure the body and html take up the full height */
+html, body {
+    height: 100%;
+    margin: 0;
+    font-family: Arial, sans-serif;
+}
+
+/* Existing styles for the navigation bar */
+nav {
+    background-color: #36454F;
+    color: #FFC300;
+    padding: 30px 60px;
+    display: flex;
+    justify-content: space-between;
+}
+
+nav ul {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+}
+
+nav li {
+    list-style: none;
+}
+
+nav li a {
+    color: white;
+    text-decoration: none;
+    font-weight: bold;
+    padding: 5px 8px;
+}
+
+nav li a:hover {
+    color: #FFC300;
+    text-decoration: none;
+}
+
+/* New styles for the <h4> element */
+nav h4 {
+    font-size: 24px;
+    font-weight: bold;
+    letter-spacing: 1px;
+}
+
+/* Ensure the main content takes up the remaining space */
+.main-content {
+    background-image: url('/uploads/bsuimage.jpg'); /* Replace with your image path */
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-position: center;
+    background-attachment: fixed;
+    padding: 20px;
+    color: #333;
+    min-height: calc(100vh - 120px); /* Adjust based on header height */
+}
+
+/* Ensure the main content takes up the full height */
+body {
+    display: flex;
+    flex-direction: column;
+}
+
+.main-content {
+    flex: 1; /* This makes the main content take up the remaining space */
+}
