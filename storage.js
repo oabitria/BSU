@@ -17,7 +17,10 @@ const multer = Multer({
 
 // Function to convert Dropbox shared link to direct link
 function convertToDirectLink(sharedLink) {
-    return sharedLink.replace('www.dropbox.com', 'dl.dropboxusercontent.com').replace('?dl=0', '');
+    if (sharedLink && typeof sharedLink === 'string') {
+        return sharedLink.replace('www.dropbox.com', 'dl.dropboxusercontent.com').replace('?dl=0', '');
+    }
+    throw new Error('Invalid shared link');
 }
 
 // Function to upload a file to Dropbox
@@ -32,14 +35,19 @@ const uploadToDropbox = async (file) => {
     try {
         // Upload the file to Dropbox
         const uploadResponse = await dbx.filesUpload({ path: filePath, contents: fileData });
+        console.log('Upload response:', uploadResponse); // Log the upload response
 
         // Create a shared link for the uploaded file
         const sharedLinkResponse = await dbx.sharingCreateSharedLinkWithSettings({ path: filePath });
+        console.log('Shared link response:', sharedLinkResponse); // Log the shared link response
 
-        // Convert the shared link to a direct link
-        const directLink = convertToDirectLink(sharedLinkResponse.result.url);
-
-        return { success: true, result: { directLink } }; // Ensure the direct link is returned
+        if (sharedLinkResponse.result && sharedLinkResponse.result.url) {
+            // Convert the shared link to a direct link
+            const directLink = convertToDirectLink(sharedLinkResponse.result.url);
+            return { success: true, result: { directLink } }; // Ensure the direct link is returned
+        } else {
+            throw new Error('Invalid shared link response');
+        }
     } catch (error) {
         console.error('Detailed error:', error); // Log detailed error
         throw new Error('Failed to upload file to Dropbox');
