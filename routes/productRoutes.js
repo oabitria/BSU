@@ -6,8 +6,8 @@ const { multer, uploadToDropbox } = require('../storage'); // Import Dropbox con
 // Post Product Route
 router.post('/post-product', multer.single('image'), async (req, res) => {
     try {
-        const imageUrl = await uploadToDropbox(req.file);
-        req.body.imageUrl = imageUrl.path_display; // Store the Dropbox file path
+        const response = await uploadToDropbox(req.file);
+        req.body.imageUrl = response.result.path_display; // Ensure this is the correct path
         productController.postProduct(req, res);
     } catch (error) {
         console.error('Error uploading file:', error);
