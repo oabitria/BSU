@@ -9,6 +9,8 @@ const db = mysql.createConnection({
 exports.postProduct = (req, res) => {
     const { name, price, seller, imageUrl } = req.body;
 
+    console.log('Received data:', { name, price, seller, imageUrl }); // Log received data
+
     if (!imageUrl) {
         return res.status(400).json({ success: false, message: 'Image is required.' });
     }
@@ -16,11 +18,13 @@ exports.postProduct = (req, res) => {
     db.query('INSERT INTO products (name, price, seller, image_url) VALUES (?, ?, ?, ?)',
              [name, price, seller, imageUrl], (error, results) => {
         if (error) {
+            console.error('Database error:', error); // Log database error
             return res.status(500).json({ success: false, message: 'Error posting product.' });
         }
         const productId = results.insertId;
         db.query('SELECT * FROM products WHERE id = ?', [productId], (error, results) => {
             if (error) {
+                console.error('Database error:', error); // Log database error
                 return res.status(500).json({ success: false, message: 'Error fetching product.' });
             }
             res.json({ success: true, message: 'Product posted successfully.', product: results[0] });
@@ -31,6 +35,7 @@ exports.postProduct = (req, res) => {
 exports.getAllProducts = (req, res) => {
     db.query('SELECT * FROM products', (error, results) => {
         if (error) {
+            console.error('Database error:', error); // Log database error
             return res.status(500).json({ success: false, message: 'Error fetching products.' });
         }
         res.json({ success: true, products: results });
