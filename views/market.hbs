@@ -194,35 +194,33 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-    // Fetch and display all products on page load
-    fetch('/products/all')
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                const productContainer = document.getElementById('productsContainer');
-                data.products.forEach(product => {
-                    // Modify the image URL to include `dl=1`
-                    const imageUrl = product.imageUrl.includes('dl=0') ? product.imageUrl.replace('dl=0', 'dl=1') : product.imageUrl;
-                    console.log('Product image URL:', imageUrl); // Log the image URL
-                    const productHtml = `
-                        <div class="col-md-4 mb-4">
-                            <div class="card">
-                                <img src="${imageUrl}" class="card-img-top" alt="${product.name}" style="width: 100%; height: 250px; object-fit: cover;">
-                                <div class="card-body">
-                                    <h5 class="card-title">${product.name}</h5>
-                                    <p class="card-text">Price: $${product.price}</p>
-                                    <p class="card-text">Seller: ${product.seller}</p>
-                                    <button class="btn btn-success add-to-cart" data-product-id="${product.id}" data-product-name="${product.name}" data-product-price="${product.price}" data-product-image="${imageUrl}">Add to Cart</button>
+            // Fetch and display all products on page load
+            fetch('/products/all')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        const productContainer = document.getElementById('productsContainer');
+                        data.products.forEach(product => {
+                            console.log('Product image URL:', product.imageUrl); // Log the image URL
+                            const productHtml = `
+                                <div class="col-md-4 mb-4">
+                                    <div class="card">
+                                        <img src="${product.imageUrl}" class="card-img-top" alt="${product.name}" style="width: 100%; height: 250px; object-fit: cover;">
+                                        <div class="card-body">
+                                            <h5 class="card-title">${product.name}</h5>
+                                            <p class="card-text">Price: $${product.price}</p>
+                                            <p class="card-text">Seller: ${product.seller}</p>
+                                            <button class="btn btn-success add-to-cart" data-product-id="${product.id}" data-product-name="${product.name}" data-product-price="${product.price}" data-product-image="${product.imageUrl}">Add to Cart</button>
+                                        </div>
+                                    </div>
                                 </div>
-                            </div>
-                        </div>
-                    `;
-                    productContainer.insertAdjacentHTML('beforeend', productHtml);
-                });
-            }
-        })
-        .catch(error => {
-            console.error('Error fetching products:', error);
+                            `;
+                            productContainer.insertAdjacentHTML('beforeend', productHtml);
+                        });
+                    }
+                })
+                .catch(error => {
+                    console.error('Error fetching products:', error);
                 });
 
             document.getElementById('postProductForm').addEventListener('submit', function(event) {
