@@ -193,7 +193,7 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
+       document.addEventListener('DOMContentLoaded', function() {
     // Fetch and display all products on page load
     fetch('/products/all')
         .then(response => response.json())
@@ -223,7 +223,9 @@
         })
         .catch(error => {
             console.error('Error fetching products:', error);
-                });
+        });
+});
+
 
             document.getElementById('postProductForm').addEventListener('submit', function(event) {
                 event.preventDefault();
