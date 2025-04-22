@@ -1,4 +1,8 @@
-const mysql = require('mysql');
+const mysql = require("mysql");
+const jwt = require("jsonwebtoken");
+const bcryptjs = require("bcryptjs");
+
+
 const db = mysql.createConnection({
     host: process.env.DATABASE_HOST,
     user: process.env.DATABASE_USER,
@@ -7,24 +11,29 @@ const db = mysql.createConnection({
 });
 
 exports.postProduct = (req, res) => {
-    const { name, price, seller, imageUrl } = req.body;
+    const { name, price, seller } = req.body;
+    const imageName = req.file ? req.file.originalname : null; // Ensure req.file is not undefined
 
-    console.log('Received data:', { name, price, seller, imageUrl }); // Log received data
+    console.log("Product Name:", name);
+    console.log("Product Price:", price);
+    console.log("Product Seller:", seller);
+    console.log("Image Name:", imageName); // Log the image name
 
-    if (!imageUrl) {
+    if (!imageName) {
         return res.status(400).json({ success: false, message: 'Image is required.' });
     }
 
-    db.query('INSERT INTO products (name, price, seller, image_url) VALUES (?, ?, ?, ?)',
-             [name, price, seller, imageUrl], (error, results) => {
+    db.query('INSERT INTO products (name, price, seller, image_name) VALUES (?, ?, ?, ?)',
+             [name, price, seller, imageName], (error, results) => {
         if (error) {
-            console.error('Database error:', error); // Log database error
+            console.error("Database error:", error);
             return res.status(500).json({ success: false, message: 'Error posting product.' });
         }
         const productId = results.insertId;
+        // Fetch the newly inserted product to return it
         db.query('SELECT * FROM products WHERE id = ?', [productId], (error, results) => {
             if (error) {
-                console.error('Database error:', error); // Log database error
+                console.error("Database error:", error);
                 return res.status(500).json({ success: false, message: 'Error fetching product.' });
             }
             res.json({ success: true, message: 'Product posted successfully.', product: results[0] });
@@ -32,10 +41,12 @@ exports.postProduct = (req, res) => {
     });
 };
 
+
+
 exports.getAllProducts = (req, res) => {
     db.query('SELECT * FROM products', (error, results) => {
         if (error) {
-            console.error('Database error:', error); // Log database error
+            console.error("Database error:", error);
             return res.status(500).json({ success: false, message: 'Error fetching products.' });
         }
         res.json({ success: true, products: results });
