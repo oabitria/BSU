@@ -17,48 +17,49 @@ const multer = Multer({
 
 // Function to convert Dropbox shared link to direct link
 function convertToDirectLink(sharedLink) {
-    if (sharedLink && typeof sharedLink === 'string') {
-        // Handles both old and new Dropbox links
-        let directLink = sharedLink
-            .replace('www.dropbox.com', 'dl.dropboxusercontent.com')
-            .replace('dropbox.com', 'dl.dropboxusercontent.com')
-            .replace('?dl=0', '')
-            .replace(/(\?rlkey=.*)$/, ''); // remove ?rlkey=... if present
-
-        return directLink;
-    }
-    throw new Error('Invalid shared link');
+    return sharedLink
+        .replace('www.dropbox.com', 'dl.dropboxusercontent.com')
+        .replace('dropbox.com', 'dl.dropboxusercontent.com')
+        .replace('?dl=0', '')
+        .replace(/(\?rlkey=.*)$/, '');
 }
+
 
 // Function to upload a file to Dropbox
 const uploadToDropbox = async (file) => {
-    if (!file) {
-        return null;
-    }
+    if (!file) return null;
 
     const filePath = `${process.env.DROPBOX_UPLOAD_PATH}/${file.originalname}`;
     const fileData = file.buffer;
 
     try {
-        // Upload the file to Dropbox
-        const uploadResponse = await dbx.filesUpload({ path: filePath, contents: fileData });
-        console.log('Upload response:', uploadResponse); // Log the upload response
+        // Upload file
+        await dbx.filesUpload({ path: filePath, contents: fileData });
 
-        // Create a shared link for the uploaded file
-        const sharedLinkResponse = await dbx.sharingCreateSharedLinkWithSettings({ path: filePath });
-        console.log('Shared link response:', sharedLinkResponse); // Log the shared link response
+        // Look for existing shared links
+        const links = await dbx.sharingListSharedLinks({
+            path: filePath,
+            direct_only: true,
+        });
 
-        if (sharedLinkResponse.result && sharedLinkResponse.result.url) {
-            // Convert the shared link to a direct link
-            const directLink = convertToDirectLink(sharedLinkResponse.result.url);
-            return { success: true, result: { directLink } }; // Ensure the direct link is returned
+        let url;
+
+        if (links.result.links.length > 0) {
+            url = links.result.links[0].url;
         } else {
-            throw new Error('Invalid shared link response');
+            // If no existing link, create a new one
+            const newLink = await dbx.sharingCreateSharedLinkWithSettings({ path: filePath });
+            url = newLink.result.url;
         }
+
+        const directLink = convertToDirectLink(url);
+        return { success: true, result: { directLink } };
+
     } catch (error) {
-        console.error('Detailed error:', error); // Log detailed error
+        console.error('Dropbox upload error:', error);
         throw new Error('Failed to upload file to Dropbox');
     }
 };
+
 
 module.exports = { multer, uploadToDropbox };
