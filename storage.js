@@ -25,15 +25,17 @@ const uploadToDropbox = async (file) => {
         return null;
     }
 
-    const filePath = `/uploads/${file.originalname}`;
+    const filePath = `${process.env.DROPBOX_UPLOAD_PATH}/${file.originalname}`;
     const fileData = file.buffer;
 
     try {
         const response = await dbx.filesUpload({ path: filePath, contents: fileData });
         return response;
     } catch (error) {
+        console.error('Detailed error:', error); // Log detailed error
         throw new Error('Failed to upload file to Dropbox');
     }
 };
+
 
 module.exports = { multer, uploadToDropbox };
