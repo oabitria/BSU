@@ -18,7 +18,14 @@ const multer = Multer({
 // Function to convert Dropbox shared link to direct link
 function convertToDirectLink(sharedLink) {
     if (sharedLink && typeof sharedLink === 'string') {
-        return sharedLink.replace('www.dropbox.com', 'dl.dropboxusercontent.com').replace('?dl=0', '');
+        // Handles both old and new Dropbox links
+        let directLink = sharedLink
+            .replace('www.dropbox.com', 'dl.dropboxusercontent.com')
+            .replace('dropbox.com', 'dl.dropboxusercontent.com')
+            .replace('?dl=0', '')
+            .replace(/(\?rlkey=.*)$/, ''); // remove ?rlkey=... if present
+
+        return directLink;
     }
     throw new Error('Invalid shared link');
 }
