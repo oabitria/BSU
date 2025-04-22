@@ -1,10 +1,10 @@
-const { Dropbox } = require('dropbox');
+const { Dropbox } = require('dropbox').Dropbox; // Correct import statement
 const fs = require('fs');
 const path = require('path');
 const multer = require('multer');
 
 // Initialize Dropbox client
-const dropbox = new Dropbox.Dropbox({ accessToken: process.env.DROPBOX_ACCESS_TOKEN });
+const dropbox = new Dropbox({ accessToken: process.env.DROPBOX_ACCESS_TOKEN });
 
 // Configure multer for file uploads
 const upload = multer({ dest: 'uploads/' });
