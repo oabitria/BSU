@@ -1,9 +1,5 @@
 const { Dropbox } = require('dropbox');
 const Multer = require('multer');
-const fs = require('fs');
-const path = require('path');
-
-// Load environment variables from .env file
 require('dotenv').config();
 
 // Initialize Dropbox client
@@ -20,7 +16,7 @@ const multer = Multer({
 });
 
 // Function to upload a file to Dropbox
-const uploadToDropbox = async (file, retries = 3, delay = 1000) => {
+const uploadToDropbox = async (file) => {
     if (!file) {
         return null;
     }
@@ -28,21 +24,13 @@ const uploadToDropbox = async (file, retries = 3, delay = 1000) => {
     const filePath = `${process.env.DROPBOX_UPLOAD_PATH}/${file.originalname}`;
     const fileData = file.buffer;
 
-    for (let attempt = 0; attempt < retries; attempt++) {
-        try {
-            const response = await dbx.filesUpload({ path: filePath, contents: fileData });
-            return response;
-        } catch (error) {
-            if (attempt < retries - 1) {
-                console.warn(`Attempt ${attempt + 1} failed. Retrying in ${delay}ms...`);
-                await new Promise(resolve => setTimeout(resolve, delay));
-            } else {
-                console.error('Detailed error:', error);
-                throw new Error('Failed to upload file to Dropbox after multiple attempts');
-            }
-        }
+    try {
+        const response = await dbx.filesUpload({ path: filePath, contents: fileData });
+        return response; // Ensure the response is returned
+    } catch (error) {
+        console.error('Detailed error:', error); // Log detailed error
+        throw new Error('Failed to upload file to Dropbox');
     }
 };
-
 
 module.exports = { multer, uploadToDropbox };
