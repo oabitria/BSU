@@ -1,36 +1,39 @@
 const { Dropbox } = require('dropbox');
-const Multer = require('multer');
-require('dotenv').config();
+const fs = require('fs');
+const path = require('path');
+const multer = require('multer');
 
 // Initialize Dropbox client
-const dbx = new Dropbox({
-    accessToken: process.env.DROPBOX_ACCESS_TOKEN,
-});
+const dropbox = new Dropbox.Dropbox({ accessToken: process.env.DROPBOX_ACCESS_TOKEN });
 
-// Configure Multer to use memory storage
-const multer = Multer({
-    storage: Multer.memoryStorage(),
-    limits: {
-        fileSize: 5 * 1024 * 1024 // 5MB file size limit
-    }
-});
+// Configure multer for file uploads
+const upload = multer({ dest: 'uploads/' });
 
-// Function to upload a file to Dropbox
-const uploadToDropbox = async (file) => {
-    if (!file) {
-        return null;
-    }
+async function uploadToDropbox(file) {
+    const filePath = path.join(__dirname, 'uploads', file.originalname);
+    const uploadPath = `/${file.originalname}`;
 
-    const filePath = `${process.env.DROPBOX_UPLOAD_PATH}/${file.originalname}`;
-    const fileData = file.buffer;
+    // Move the file to the uploads directory
+    fs.writeFileSync(filePath, file.buffer);
 
     try {
-        const response = await dbx.filesUpload({ path: filePath, contents: fileData });
-        return response; // Ensure the response is returned
-    } catch (error) {
-        console.error('Detailed error:', error); // Log detailed error
-        throw new Error('Failed to upload file to Dropbox');
-    }
-};
+        // Upload the file to Dropbox
+        const response = await dropbox.filesUpload({ path: uploadPath, contents: fs.createReadStream(filePath) });
 
-module.exports = { multer, uploadToDropbox };
+        // Create a shared link for the uploaded file
+        const sharedLink = await dropbox.sharingCreateSharedLinkWithSettings({ path: uploadPath });
+
+        // Convert the shared link to a direct link
+        const directLink = sharedLink.result.url.replace('www.dropbox.com', 'dl.dropboxusercontent.com').replace('?dl=0', '');
+
+        return { success: true, result: { directLink } };
+    } catch (error) {
+        console.error('Error uploading to Dropbox:', error);
+        throw error;
+    } finally {
+        // Clean up the local file
+        fs.unlinkSync(filePath);
+    }
+}
+
+module.exports = { multer: upload, uploadToDropbox };
