@@ -1,6 +1,7 @@
 const { Dropbox } = require('dropbox').Dropbox; // Correct import statement
 const fs = require('fs');
 const path = require('path');
+require('dotenv').config();
 const multer = require('multer');
 
 // Initialize Dropbox client
