@@ -29,7 +29,7 @@ const uploadToDropbox = async (file) => {
         return null;
     }
 
-    const filePath = ${process.env.DROPBOX_UPLOAD_PATH}/${file.originalname};
+    const filePath = `${process.env.DROPBOX_UPLOAD_PATH}/${file.originalname}`;
     const fileData = file.buffer;
 
     try {
@@ -55,4 +55,3 @@ const uploadToDropbox = async (file) => {
 };
 
 module.exports = { multer, uploadToDropbox };
-
