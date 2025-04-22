@@ -204,12 +204,12 @@
                             const productHtml = `
                                 <div class="col-md-4 mb-4">
                                     <div class="card">
-                                        <img src="/uploads/${product.image_name}" class="card-img-top" alt="${product.name}" style="width: 100%; height: 250px; object-fit: cover;">
+                                        <img src="${product.imageUrl}" class="card-img-top" alt="${product.name}" style="width: 100%; height: 250px; object-fit: cover;">
                                         <div class="card-body">
                                             <h5 class="card-title">${product.name}</h5>
                                             <p class="card-text">Price: $${product.price}</p>
                                             <p class="card-text">Seller: ${product.seller}</p>
-                                            <button class="btn btn-success add-to-cart" data-product-id="${product.id}" data-product-name="${product.name}" data-product-price="${product.price}" data-product-image="/uploads/${product.image_name}">Add to Cart</button>
+                                            <button class="btn btn-success add-to-cart" data-product-id="${product.id}" data-product-name="${product.name}" data-product-price="${product.price}" data-product-image="${product.imageUrl}">Add to Cart</button>
                                         </div>
                                     </div>
                                 </div>
@@ -240,12 +240,12 @@
                         const productHtml = `
                             <div class="col-md-4 mb-4">
                                 <div class="card">
-                                    <img src="/uploads/${data.product.image_name}" class="card-img-top" alt="${data.product.name}" style="width: 100%; height: 250px; object-fit: cover;">
+                                    <img src="${data.product.imageUrl}" class="card-img-top" alt="${data.product.name}" style="width: 100%; height: 250px; object-fit: cover;">
                                     <div class="card-body">
                                         <h5 class="card-title">${data.product.name}</h5>
                                         <p class="card-text">Price: $${data.product.price}</p>
                                         <p class="card-text">Seller: ${data.product.seller}</p>
-                                        <button class="btn btn-success add-to-cart" data-product-id="${data.product.id}" data-product-name="${data.product.name}" data-product-price="${data.product.price}" data-product-image="/uploads/${data.product.image_name}">Add to Cart</button>
+                                        <button class="btn btn-success add-to-cart" data-product-id="${data.product.id}" data-product-name="${data.product.name}" data-product-price="${data.product.price}" data-product-image="${data.product.imageUrl}">Add to Cart</button>
                                     </div>
                                 </div>
                             </div>
