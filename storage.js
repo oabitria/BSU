@@ -20,7 +20,7 @@ const multer = Multer({
 });
 
 // Function to upload a file to Dropbox
-const uploadToDropbox = async (file) => {
+const uploadToDropbox = async (file, retries = 3, delay = 1000) => {
     if (!file) {
         return null;
     }
@@ -28,12 +28,19 @@ const uploadToDropbox = async (file) => {
     const filePath = `${process.env.DROPBOX_UPLOAD_PATH}/${file.originalname}`;
     const fileData = file.buffer;
 
-    try {
-        const response = await dbx.filesUpload({ path: filePath, contents: fileData });
-        return response;
-    } catch (error) {
-        console.error('Detailed error:', error); // Log detailed error
-        throw new Error('Failed to upload file to Dropbox');
+    for (let attempt = 0; attempt < retries; attempt++) {
+        try {
+            const response = await dbx.filesUpload({ path: filePath, contents: fileData });
+            return response;
+        } catch (error) {
+            if (attempt < retries - 1) {
+                console.warn(`Attempt ${attempt + 1} failed. Retrying in ${delay}ms...`);
+                await new Promise(resolve => setTimeout(resolve, delay));
+            } else {
+                console.error('Detailed error:', error);
+                throw new Error('Failed to upload file to Dropbox after multiple attempts');
+            }
+        }
     }
 };
 
