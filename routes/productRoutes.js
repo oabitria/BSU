@@ -10,7 +10,8 @@ router.post('/post-product', multer.single('image'), async (req, res) => {
         req.body.imageUrl = imageUrl.path_display; // Store the Dropbox file path
         productController.postProduct(req, res);
     } catch (error) {
-        res.status(500).json({ error: 'Failed to upload file' });
+        console.error('Error uploading file:', error);
+        res.status(500).json({ error: 'Failed to upload file', details: error.message });
     }
 });
 
